@@ -42,19 +42,19 @@ interface ComponentConsumer<C> {
  */
 class ComponentManager<C> : ComponentProducer<C>, ComponentConsumer<C> {
 
-    private sealed class ComponentHolder<C> {
+    private sealed class ComponentHolder<out C> {
         object Empty : ComponentHolder<Nothing>()
-        data class Value<C>(val component: C) : ComponentHolder<C>()
+        data class Value<out C>(val component: C) : ComponentHolder<C>()
     }
 
     private val componentSubject = BehaviorSubject
-            .createDefault<ComponentHolder<out C>>(ComponentHolder.Empty)
+            .createDefault<ComponentHolder<C>>(ComponentHolder.Empty)
 
     override val component = componentSubject
             .flatMap<C> {
                 when (it) {
                     ComponentHolder.Empty -> Observable.empty()
-                    is ComponentHolder.Value<out C> -> Observable.just(it.component)
+                    is ComponentHolder.Value<C> -> Observable.just(it.component)
                 }
             }
             .firstOrError()
