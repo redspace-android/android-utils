@@ -1,3 +1,5 @@
+package com.redspace.utils.durations
+
 import org.amshove.kluent.shouldBeFalse
 import org.amshove.kluent.shouldBeInstanceOf
 import org.amshove.kluent.shouldEqual
