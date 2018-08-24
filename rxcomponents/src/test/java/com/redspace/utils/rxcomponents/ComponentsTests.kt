@@ -1,66 +1,58 @@
+import org.jetbrains.spek.api.Spek
+import org.jetbrains.spek.api.dsl.describe
+import org.jetbrains.spek.api.dsl.it
 import org.junit.Test
 
-class ComponentsTests {
+object ComponentSpec : Spek({
 
-    val testSubject = ComponentManager<Unit>()
-
-    @Test
-    fun `Given I am waiting for a component, when it becomes available, then I can execute my work`() {
-        // GIVEN
+    describe("When waiting for a component") {
+        val testSubject = ComponentManager<Unit>()
         val obs = testSubject.component.test()
 
-        // WHEN
+        it("should not emit anything") {
+            obs.assertNoValues().assertNotComplete().assertNoErrors()
+        }
+    }
+
+    describe("When a component becomes available") {
+        val testSubject = ComponentManager<Unit>()
+        val obs = testSubject.component.test()
         testSubject.consume(Unit)
 
-        // THEN
-        obs.assertValueCount(1).assertComplete()
+        it("should emit the component") {
+            obs.assertValueCount(1).assertComplete()
+        }
     }
 
-    @Test
-    fun `Given I am waiting for a component, if it never becomes available, then I never execute my work`() {
-        // GIVEN
+    describe("When clear is executed with no available component") {
+        val testSubject = ComponentManager<Unit>()
         val obs = testSubject.component.test()
-
-        // THEN
-        obs.assertNoValues().assertNotComplete().assertNoErrors()
-    }
-
-    @Test
-    fun `Given I am waiting for a component, if I clear, then I never execute my work`() {
-        // GIVEN
-        val obs = testSubject.component.test()
-
-        // WHEN
         testSubject.clear()
 
-        // THEN
-        obs.assertNoValues().assertNotComplete().assertNoErrors()
+        it("should not emit anything") {
+            obs.assertNoValues().assertNotComplete().assertNoErrors()
+        }
     }
 
-    @Test
-    fun `Given I have a component and clear it, when I start listening, then I never execute my work`() {
-        // GIVEN
+    describe("When a component is cleared") {
+        val testSubject = ComponentManager<Unit>()
         testSubject.consume(Unit)
         testSubject.clear()
-
-        // WHEN
         val obs = testSubject.component.test()
 
-        // THEN
-        obs.assertNoValues().assertNotComplete().assertNoErrors()
+        it("should no longer be emitted") {
+            obs.assertNoValues().assertNotComplete().assertNoErrors()
+        }
     }
 
-    @Test
-    fun `Given I have component A, when I set component B and listen, then I get component B`() {
-        // GIVEN
+    describe("When I replace my component with a new one") {
         val testSubject = ComponentManager<String>()
         testSubject.consume("A")
-
-        // WHEN
         testSubject.consume("B")
         val obs = testSubject.component.test()
 
-        // THEN
-        obs.assertComplete().assertValueCount(1).assertValueAt(0, { it == "B" })
+        it("should only ever emit b") {
+            obs.assertValue("B")
+        }
     }
-}
+})
