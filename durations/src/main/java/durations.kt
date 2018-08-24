@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit
 fun nanoseconds(ns: Long) = if (ns == 0L) zero else Duration(ns, TimeUnit.NANOSECONDS, 0)
 fun microseconds(us: Long) = if (us == 0L) zero else Duration(us, TimeUnit.MICROSECONDS, 1)
 fun milliseconds(ms: Long) = if (ms == 0L) zero else Duration(ms, TimeUnit.MILLISECONDS, 2)
-fun seconds(s: Long) = if (s == 0L) zero else Duration(s, TimeUnit.MILLISECONDS, 3)
+fun seconds(s: Long) = if (s == 0L) zero else Duration(s, TimeUnit.SECONDS, 3)
 fun minutes(m: Long) = if (m == 0L) zero else Duration(m, TimeUnit.MINUTES, 4)
 fun hours(h: Long) = if (h == 0L) zero else Duration(h, TimeUnit.HOURS, 5)
 fun days(d: Long) = if (d == 0L) zero else Duration(d, TimeUnit.DAYS, 6)
