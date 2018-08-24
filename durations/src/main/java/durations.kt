@@ -68,8 +68,14 @@ data class Duration internal constructor(
      * Minimizes loss of precision by first scaling to the smaller of the two units.
      */
     operator fun plus(other: Duration): Duration {
+        if (this == zero) return other
+        if (other == zero) return this
+
         val (lhs, rhs, smallestUnit) = reducedOperands(other)
-        return unitConstructor(smallestUnit)(lhs + rhs)
+
+        val result = lhs + rhs
+        if (result == 0L) return zero
+        return Duration(result, smallestUnit)
     }
 
     /** Subtracts the other duration from this one.
@@ -77,8 +83,19 @@ data class Duration internal constructor(
      * Minimizes loss of precision by first scaling to the smaller of the two units.
      */
     operator fun minus(other: Duration): Duration {
+        if (this == zero) return -other
+        if (other == zero) return this
+
         val (lhs, rhs, smallestUnit) = reducedOperands(other)
-        return unitConstructor(smallestUnit)(lhs - rhs)
+
+        val result = lhs - rhs
+        if (result == 0L) return zero
+        return Duration(result, smallestUnit)
+    }
+
+    operator fun unaryMinus(): Duration {
+        if (this == zero) return this
+        return Duration(-this.duration, this.unit)
     }
 
     override operator fun compareTo(other: Duration): Int {
