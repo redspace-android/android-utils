@@ -55,46 +55,29 @@ object ConstructionMethodSpec : Spek({
     }
 })
 
+object ComparableSpec : Spek({
+
+    val constructors = listOf(::nanoseconds, ::microseconds, ::milliseconds, ::seconds, ::minutes, ::hours, ::days)
+    val values = constructors.flatMap { ctor -> listOf(1L, 2).map(ctor) }
+
+    values.forEachIndexed { index, value ->
+        describe("the duration $value") {
+            it ("should be larger than than all values preceeding it") {
+                values.subList(0, index).none { it >= value }.shouldBeTrue()
+            }
+            it ("should be smaller than all values after it") {
+                values.subList(index + 1, values.size).none { it <= value }.shouldBeTrue()
+            }
+        }
+    }
+
+    val unsorted = values.shuffled()
+    it ("should sort itself correctly") {
+        unsorted.sorted() shouldEqual values
+    }
+})
+
 class DurationTests {
-    @Test
-    fun `Given two equal durations, when I compare them, then I expect a 0`() {
-        // GIVEN
-        val a = days(4)
-        val b = a.milliseconds.toMilliseconds()
-
-        // WHEN
-        val result = a.compareTo(b)
-
-        // THEN
-        result shouldEqual 0
-    }
-
-    @Test
-    fun `Given a small duration, when I compare it to a large duration, then I expect below 0`() {
-        // GIVEN
-        val large = days(4)
-        val small = hours(5)
-
-        // WHEN
-        val result = small.compareTo(large)
-
-        // THEN
-        result shouldBeLessThan 0
-    }
-
-    @Test
-    fun `Given a large duration, when I compare it to a small duration, then I expect more than 0`() {
-        // GIVEN
-        val large = days(4)
-        val small = hours(5)
-
-        // WHEN
-        val result = large.compareTo(small)
-
-        // THEN
-        result shouldBeGreaterThan 0
-    }
-
     @Test
     fun `Given a negative duration, when I convert, then I should not crash`() {
         // GIVEN

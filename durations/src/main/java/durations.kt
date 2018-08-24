@@ -49,7 +49,7 @@ data class Duration internal constructor(
         val smallestUnit = if (unit.ordinal < other.unit.ordinal) this.unit else other.unit
         return Triple(
                 smallestUnit.convert(duration, unit),
-                smallestUnit.convert(duration, unit),
+                smallestUnit.convert(other.duration, other.unit),
                 smallestUnit)
     }
 
