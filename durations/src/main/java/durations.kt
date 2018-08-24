@@ -11,16 +11,6 @@ fun hours(h: Long) = if (h == 0L) zero else Duration(h, TimeUnit.HOURS)
 fun days(d: Long) = if (d == 0L) zero else Duration(d, TimeUnit.DAYS)
 val zero = Duration(0, TimeUnit.DAYS)
 
-private fun unitConstructor(unit: TimeUnit): (Long) -> Duration = when (unit) {
-    TimeUnit.NANOSECONDS -> ::nanoseconds
-    TimeUnit.MICROSECONDS -> ::microseconds
-    TimeUnit.MILLISECONDS -> ::milliseconds
-    TimeUnit.SECONDS -> ::seconds
-    TimeUnit.MINUTES -> ::minutes
-    TimeUnit.HOURS -> ::hours
-    TimeUnit.DAYS -> ::days
-}
-
 /** Represents a time duration.
  *
  * Each instance of this class represents a different unit for measuring time.  You can use durations interchangeably
