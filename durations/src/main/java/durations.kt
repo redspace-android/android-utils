@@ -104,7 +104,7 @@ data class Duration internal constructor(
     }
 }
 
-fun TimeUnit.toDuration(duration: Long) = unitConstructor(this).invoke(duration)
+fun TimeUnit.toDuration(duration: Long) = if (duration == 0L) zero else Duration(duration, this)
 
 fun Long.toNanoseconds() = nanoseconds(this)
 fun Long.toMicroseconds() = microseconds(this)
