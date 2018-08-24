@@ -1,5 +1,6 @@
 package com.redspace.durations
 
+import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeGreaterThan
 import org.amshove.kluent.shouldBeLessThan
 import org.amshove.kluent.shouldBeTrue
@@ -25,7 +26,30 @@ object InternedZerosSpec : Spek({
         describe("zero constant for the unit $unit") {
             val duration = unit.toDuration(0)
             it("should equal $zeroType") {
-                duration shouldEqual zeroType
+                duration shouldBe zeroType
+            }
+        }
+    }
+})
+
+object ConstructionMethodSpec : Spek({
+    val constructors = listOf(::nanoseconds, ::microseconds, ::milliseconds, ::seconds, ::minutes, ::hours, ::days)
+    val ones = constructors.map { it(1) }
+
+    it ("should contain all possible constructors") {
+        constructors.size shouldEqual 7
+    }
+
+    it ("should have equivalent sizes") {
+        constructors.size shouldEqual ones.size
+    }
+
+    constructors.forEachIndexed { index, ctor ->
+        describe("the result of a specific constructor (constructors[$index])") {
+            val one = ctor(1)
+            it("should only equal the output of that specific constructor (ones[$index])") {
+                one shouldEqual ones[index]
+                ones.filterNot { it == one }.size shouldEqual ones.size - 1
             }
         }
     }

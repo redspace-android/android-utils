@@ -2,14 +2,14 @@ package com.redspace.durations
 
 import java.util.concurrent.TimeUnit
 
-fun nanoseconds(ns: Long) = if (ns == 0L) zero else Duration(ns, TimeUnit.NANOSECONDS, 0)
-fun microseconds(us: Long) = if (us == 0L) zero else Duration(us, TimeUnit.MICROSECONDS, 1)
-fun milliseconds(ms: Long) = if (ms == 0L) zero else Duration(ms, TimeUnit.MILLISECONDS, 2)
-fun seconds(s: Long) = if (s == 0L) zero else Duration(s, TimeUnit.SECONDS, 3)
-fun minutes(m: Long) = if (m == 0L) zero else Duration(m, TimeUnit.MINUTES, 4)
-fun hours(h: Long) = if (h == 0L) zero else Duration(h, TimeUnit.HOURS, 5)
-fun days(d: Long) = if (d == 0L) zero else Duration(d, TimeUnit.DAYS, 6)
-val zero = Duration(0, TimeUnit.DAYS, 6)
+fun nanoseconds(ns: Long) = if (ns == 0L) zero else Duration(ns, TimeUnit.NANOSECONDS)
+fun microseconds(us: Long) = if (us == 0L) zero else Duration(us, TimeUnit.MICROSECONDS)
+fun milliseconds(ms: Long) = if (ms == 0L) zero else Duration(ms, TimeUnit.MILLISECONDS)
+fun seconds(s: Long) = if (s == 0L) zero else Duration(s, TimeUnit.SECONDS)
+fun minutes(m: Long) = if (m == 0L) zero else Duration(m, TimeUnit.MINUTES)
+fun hours(h: Long) = if (h == 0L) zero else Duration(h, TimeUnit.HOURS)
+fun days(d: Long) = if (d == 0L) zero else Duration(d, TimeUnit.DAYS)
+val zero = Duration(0, TimeUnit.DAYS)
 
 private fun unitConstructor(unit: TimeUnit): (Long) -> Duration = when (unit) {
     TimeUnit.NANOSECONDS -> ::nanoseconds
@@ -29,8 +29,7 @@ private fun unitConstructor(unit: TimeUnit): (Long) -> Duration = when (unit) {
  */
 data class Duration internal constructor(
         private val duration: Long,
-        private val unit: TimeUnit,
-        private val order: Int
+        private val unit: TimeUnit
 ) : Comparable<Duration> {
 
     val nanoseconds: Long
@@ -57,7 +56,7 @@ data class Duration internal constructor(
     }
 
     private fun reducedOperands(other: Duration): Triple<Long, Long, TimeUnit> {
-        val smallestUnit = if (order < other.order) this.unit else other.unit
+        val smallestUnit = if (unit.ordinal < other.unit.ordinal) this.unit else other.unit
         return Triple(
                 smallestUnit.convert(duration, unit),
                 smallestUnit.convert(duration, unit),
