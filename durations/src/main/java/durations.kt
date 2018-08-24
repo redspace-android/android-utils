@@ -39,10 +39,10 @@ data class Duration internal constructor(
 
     private fun convert(durationWrapper: (Long) -> Duration, convertTo: TimeUnit): Long {
         return when {
-            duration == 0L -> zero
-            unit == convertTo -> this
-            else -> durationWrapper(convertTo.convert(duration, unit))
-        }.duration
+            duration == 0L -> 0L
+            unit == convertTo -> duration
+            else -> convertTo.convert(duration, unit)
+        }
     }
 
     private fun reducedOperands(other: Duration): Triple<Long, Long, TimeUnit> {

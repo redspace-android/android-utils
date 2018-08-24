@@ -1,15 +1,15 @@
 package com.redspace.durations
 
 import org.amshove.kluent.shouldBe
-import org.amshove.kluent.shouldBeGreaterThan
 import org.amshove.kluent.shouldBeLessThan
 import org.amshove.kluent.shouldBeTrue
 import org.amshove.kluent.shouldEqual
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.it
-import org.junit.Test
 import java.util.concurrent.TimeUnit
+
+private val CONSTRUCTORS = listOf(::nanoseconds, ::microseconds, ::milliseconds, ::seconds, ::minutes, ::hours, ::days)
 
 object InternedZerosSpec : Spek({
     val cases = mapOf(
@@ -33,18 +33,9 @@ object InternedZerosSpec : Spek({
 })
 
 object ConstructionMethodSpec : Spek({
-    val constructors = listOf(::nanoseconds, ::microseconds, ::milliseconds, ::seconds, ::minutes, ::hours, ::days)
-    val ones = constructors.map { it(1) }
+    val ones = CONSTRUCTORS.map { it(1) }
 
-    it ("should contain all possible constructors") {
-        constructors.size shouldEqual 7
-    }
-
-    it ("should have equivalent sizes") {
-        constructors.size shouldEqual ones.size
-    }
-
-    constructors.forEachIndexed { index, ctor ->
+    CONSTRUCTORS.forEachIndexed { index, ctor ->
         describe("the result of a specific constructor (constructors[$index])") {
             val one = ctor(1)
             it("should only equal the output of that specific constructor (ones[$index])") {
@@ -56,178 +47,108 @@ object ConstructionMethodSpec : Spek({
 })
 
 object ComparableSpec : Spek({
-
-    val constructors = listOf(::nanoseconds, ::microseconds, ::milliseconds, ::seconds, ::minutes, ::hours, ::days)
-    val values = constructors.flatMap { ctor -> listOf(1L, 2).map(ctor) }
+    val values = CONSTRUCTORS.flatMap { ctor -> listOf(1L, 2).map(ctor) }
 
     values.forEachIndexed { index, value ->
         describe("the duration $value") {
-            it ("should be larger than than all values preceeding it") {
+            it("should be larger than than all values preceeding it") {
                 values.subList(0, index).none { it >= value }.shouldBeTrue()
             }
-            it ("should be smaller than all values after it") {
+            it("should be smaller than all values after it") {
                 values.subList(index + 1, values.size).none { it <= value }.shouldBeTrue()
             }
         }
     }
 
     val unsorted = values.shuffled()
-    it ("should sort itself correctly") {
+    it("should sort itself correctly") {
         unsorted.sorted() shouldEqual values
+    }
+
+    val a = nanoseconds(1000)
+    val b = microseconds(1)
+    describe("when comparing the same duration in different units") {
+        val result = a.compareTo(b)
+        it("should be equivalent") {
+            result shouldEqual 0
+        }
     }
 })
 
-class DurationTests {
-    @Test
-    fun `Given a negative duration, when I convert, then I should not crash`() {
-        // GIVEN
-        val neg = milliseconds(-100)
+object NegativeDurationsSpec : Spek({
+    val neg = milliseconds(-100)
 
-        // WHEN
-        val result = neg.microseconds
-
-        // THEN
-        result shouldEqual microseconds(TimeUnit.MILLISECONDS.toMicros(-100))
+    it("should not crash when I ask for a different unit") {
+        neg.days shouldEqual 0L
     }
 
-    @Test
-    fun `When I add smaller unit to larger unit, then I do not lose precision`() {
-        // GIVEN
-        val expected = 1010
-        val small = nanoseconds(10)
-        val large = microseconds(10)
+    it("should maintain sign if converted") {
+        neg.microseconds shouldBeLessThan 0
+    }
 
-        // WHEN
+    it("should become positive if unary minus is applied") {
+        -neg shouldEqual milliseconds(100)
+    }
+})
+
+object AdditionOperatorSpec : Spek({
+    val small = nanoseconds(10)
+    val large = microseconds(1)
+    val sum = 1010L
+
+    describe("when adding a smaller unit to a larger unit") {
         val result = small + large
-
-        // THEN
-        result.nanoseconds shouldEqual expected
+        it("should not lose precision") {
+            result.nanoseconds shouldEqual sum
+        }
     }
 
-    @Test
-    fun `When I add larger unit to smaller unit, then I do not lose precision`() {
-        // GIVEN
-        val expected = 1010
-        val small = nanoseconds(10)
-        val large = microseconds(10)
-
-        // WHEN
+    describe("when adding a larger unit to a smaller unit") {
         val result = large + small
+        it("should not lose precision") {
+            result.nanoseconds shouldEqual sum
+        }
+    }
+})
 
-        // THEN
-        result.nanoseconds shouldEqual expected
+object SubtractionOperatorSpec : Spek({
+    val small = nanoseconds(10)
+    val large = microseconds(1)
+    val differenceSmallMinusLarge = -990L
+    val differenceLargeMinusSmall = 990L
+
+    describe("when subtracting a smaller unit from a larger unit") {
+        val result = small - large
+        it("should not lose precision") {
+            result.nanoseconds shouldEqual differenceSmallMinusLarge
+        }
     }
 
-    @Test
-    fun `When I subtract smaller unit from larger unit, then I do not lose precision`() {
-        // GIVEN
-        val expected = 1010
-        val small = nanoseconds(10)
-        val large = microseconds(10)
-
-        // WHEN
-        val result = small + large
-
-        // THEN
-        result.nanoseconds shouldEqual expected
+    describe("when subtracting a larger unit from a smaller unit") {
+        val result = large - small
+        it("should not lose precision") {
+            result.nanoseconds shouldEqual differenceLargeMinusSmall
+        }
     }
+})
 
-    @Test
-    fun `When I subtract larger unit from smaller unit, then I do not lose precision`() {
-        // GIVEN
-        val expected = 1010
-        val small = nanoseconds(10)
-        val large = microseconds(10)
+object ConvertUpSpec : Spek({
 
-        // WHEN
-        val result = large + small
+    val data = mapOf(
+            nanoseconds(1).microseconds to "us",
+            microseconds(1).milliseconds to "ms",
+            milliseconds(1).seconds to "s",
+            seconds(1).minutes to "m",
+            minutes(1).hours to "h",
+            hours(1).days to "d"
+    )
 
-        // THEN
-        result.nanoseconds shouldEqual expected
+    data.forEach { (duration, unit) ->
+        describe("when I convert less than 1$unit to $unit") {
+            it("should equal 0") {
+                duration shouldEqual 0L
+            }
+        }
+
     }
-
-    @Test
-    fun `When I convert less than 1us to us, then I get 0`() {
-        // GIVEN
-        val ns = nanoseconds(1)
-
-        // WHEN
-        val us = ns.microseconds
-
-        // THEN
-        us shouldEqual zero
-    }
-
-    @Test
-    fun `When I convert less than 1ms to ms, then I get 0`() {
-        // GIVEN
-        val us = microseconds(1)
-
-        // WHEN
-        val ms = us.milliseconds
-
-        // THEN
-        ms shouldEqual zero
-    }
-
-    @Test
-    fun `When I convert less than 1s to s, then I get 0`() {
-        // GIVEN
-        val ms = milliseconds(1)
-
-        // WHEN
-        val s = ms.seconds
-
-        // THEN
-        s shouldEqual zero
-    }
-
-    @Test
-    fun `When I convert less than 1m to m, then I get 0`() {
-        // GIVEN
-        val s = seconds(1)
-
-        // WHEN
-        val m = s.minutes
-
-        // THEN
-        m shouldEqual zero
-    }
-
-    @Test
-    fun `When I convert less than 1h to h, then I get 0`() {
-        // GIVEN
-        val m = minutes(1)
-
-        // WHEN
-        val h = m.hours
-
-        // THEN
-        h shouldEqual zero
-    }
-
-    @Test
-    fun `When I convert less than 1d to d, then I get 0`() {
-        // GIVEN
-        val h = hours(1)
-
-        // WHEN
-        val d = h.days
-
-        // THEN
-        d shouldEqual zero
-    }
-
-    @Test
-    fun `When I compare same duration in different units, then they are equal`() {
-        // GIVEN
-        val a = milliseconds(100)
-        val b = a.nanoseconds.toNanoseconds()
-
-        // WHEN
-        val r = a == b
-
-        // THEN
-        r.shouldBeTrue()
-    }
-}
+})
