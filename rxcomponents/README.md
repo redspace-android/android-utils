@@ -1,4 +1,4 @@
-# Durations -- Typesafe Time Units
+# RxComponents
 
 Author: Alex Hart ([exallium](https://www.github.com/exallium))
 

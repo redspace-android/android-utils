@@ -26,7 +26,7 @@ interface ComponentConsumer<C> {
  * where and when we are providing this:
  *
  * ```
- * val mgr = ComponentManager()
+ * val mgr = ComponentManager<Activity>()
  *
  * fun onAttach(...) { mgr.consume(getActivity()) }
  * fun onDestroy(...) { mgr.clear() }

@@ -40,7 +40,7 @@ object ComponentSpec : Spek({
         val obs = testSubject.component.test()
 
         it("should no longer be emitted") {
-            obs.assertNoValues().assertNotComplete().assertNoErrors()
+            obs.assertNotTerminated()
         }
     }
 
